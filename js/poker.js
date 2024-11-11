@@ -1,9 +1,6 @@
-import readline from 'node:readline';
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+import readlineSync from 'readline-sync';
+import { displayLobby } from './server.js';
+import chalk from 'chalk';
 
 // 포커 카드 덱을 생성
 function createDeck() {
@@ -37,69 +34,84 @@ function cardToString(card) {
 function createCardVisual(value, suit) {
   const topBottom = `┌───────┐\n└───────┘`;
   const empty = `│       │`;
-  let middle = '';
+
+  // 슈트에 따른 색상 적용
+  let coloredSuit;
+  switch (suit) {
+    case '♥':
+      coloredSuit = chalk.redBright(suit);
+      break;
+    case '♦':
+      coloredSuit = chalk.magentaBright(suit);
+      break;
+    case '♣':
+      coloredSuit = chalk.greenBright(suit);
+      break;
+    case '♠':
+      coloredSuit = chalk.blueBright(suit);
+      break;
+  }
 
   // 숫자나 문자를 왼쪽 상단과 오른쪽 하단에 배치
   const displayValue = value.length === 2 ? value : ` ${value}`;
   const lines = [
     `│${displayValue}     │`,
     empty,
-    `│   ${suit}   │`,
+    `│   ${coloredSuit}   │`,
     empty,
-    `│     ${displayValue.split('').join('')}│`,
+    `│     ${displayValue.split('').reverse().join('')}│`,
   ];
 
   // 숫자에 따라 심볼 배치
   if ('JQK'.includes(value)) {
-    lines[2] = `│   ${value}${suit}  │`;
+    lines[2] = `│  ${value}${coloredSuit}   │`;
   } else if (value === 'A') {
-    lines[2] = `│   ${suit}   │`;
+    lines[2] = `│   ${coloredSuit}   │`;
   } else {
     const num = parseInt(value);
-    const symbols = Array(num).fill(suit);
     switch (num) {
       case 2:
-        lines[1] = `│   ${suit}   │`;
-        lines[3] = `│   ${suit}   │`;
+        lines[1] = `│   ${coloredSuit}   │`;
+        lines[3] = `│   ${coloredSuit}   │`;
         break;
       case 3:
-        lines[1] = `│   ${suit}   │`;
-        lines[2] = `│   ${suit}   │`;
-        lines[3] = `│   ${suit}   │`;
+        lines[1] = `│   ${coloredSuit}   │`;
+        lines[2] = `│   ${coloredSuit}   │`;
+        lines[3] = `│   ${coloredSuit}   │`;
         break;
       case 4:
-        lines[1] = `│ ${suit}   ${suit} │`;
-        lines[3] = `│ ${suit}   ${suit} │`;
+        lines[1] = `│ ${coloredSuit}   ${coloredSuit} │`;
+        lines[3] = `│ ${coloredSuit}   ${coloredSuit} │`;
         break;
       case 5:
-        lines[1] = `│ ${suit}   ${suit} │`;
-        lines[2] = `│   ${suit}   │`;
-        lines[3] = `│ ${suit}   ${suit} │`;
+        lines[1] = `│ ${coloredSuit}   ${coloredSuit} │`;
+        lines[2] = `│   ${coloredSuit}   │`;
+        lines[3] = `│ ${coloredSuit}   ${coloredSuit} │`;
         break;
       case 6:
-        lines[1] = `│ ${suit}   ${suit} │`;
-        lines[2] = `│ ${suit}   ${suit} │`;
-        lines[3] = `│ ${suit}   ${suit} │`;
+        lines[1] = `│ ${coloredSuit}   ${coloredSuit} │`;
+        lines[2] = `│ ${coloredSuit}   ${coloredSuit} │`;
+        lines[3] = `│ ${coloredSuit}   ${coloredSuit} │`;
         break;
       case 7:
-        lines[1] = `│ ${suit}   ${suit} │`;
-        lines[2] = `│ ${suit} ${suit} ${suit} │`;
-        lines[3] = `│ ${suit}   ${suit} │`;
+        lines[1] = `│ ${coloredSuit}   ${coloredSuit} │`;
+        lines[2] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
+        lines[3] = `│ ${coloredSuit}   ${coloredSuit} │`;
         break;
       case 8:
-        lines[1] = `│ ${suit} ${suit} ${suit} │`;
-        lines[2] = `│ ${suit}   ${suit} │`;
-        lines[3] = `│ ${suit} ${suit} ${suit} │`;
+        lines[1] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
+        lines[2] = `│ ${coloredSuit}   ${coloredSuit} │`;
+        lines[3] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
         break;
       case 9:
-        lines[1] = `│ ${suit} ${suit} ${suit} │`;
-        lines[2] = `│ ${suit} ${suit} ${suit} │`;
-        lines[3] = `│ ${suit} ${suit} ${suit} │`;
+        lines[1] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
+        lines[2] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
+        lines[3] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
         break;
       case 10:
-        lines[1] = `│ ${suit} ${suit} ${suit} │`;
-        lines[2] = `│ ${suit}${suit} ${suit}${suit} │`;
-        lines[3] = `│ ${suit} ${suit} ${suit} │`;
+        lines[1] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
+        lines[2] = `│ ${coloredSuit}${coloredSuit} ${coloredSuit}${coloredSuit} │`;
+        lines[3] = `│ ${coloredSuit} ${coloredSuit} ${coloredSuit} │`;
         break;
     }
   }
@@ -116,9 +128,6 @@ function displayHand(hand) {
   }
   return display;
 }
-// function displayHand(hand) {
-//   return hand.map(cardToString).join(" ");
-// }
 
 // 카드 한 장 뽑기
 function drawCard(deck) {
@@ -137,21 +146,29 @@ function evaluateHand(hand) {
   });
 
   const counts = Object.values(valueCounts);
-  const isFlush = new Set(suits).size === 1; // 플러쉬가 된다면
+  const isFlush = new Set(suits).size === 1;
   const isStraight = isStraightHand(values);
 
-  if (isFlush && isStraight) return '스트레이트 플러시';
-  if (counts.includes(4)) return '포카드';
-  if (counts.includes(3) && counts.includes(2)) return '풀하우스';
-  if (isFlush) return '플러시';
-  if (isStraight) return '스트레이트';
-  if (counts.includes(3)) return '트리플';
-  if (counts.filter((count) => count === 2).length === 2) return '투페어';
-  if (counts.includes(2)) return '원페어';
-  return '하이카드';
+  // 로얄 스트레이트 플러시 확인
+  const isRoyalStraightFlush =
+    isFlush &&
+    isStraight &&
+    new Set(values).size === 5 &&
+    values.includes('A') &&
+    values.includes('K');
+
+  if (isRoyalStraightFlush) return '로얄 스트레이트 플러시'; // *16.0
+  if (isFlush && isStraight) return '스트레이트 플러시'; // * 8.0
+  if (counts.includes(4)) return '포카드'; // * 4.0
+  if (counts.includes(3) && counts.includes(2)) return '풀하우스'; // *3.0
+  if (isFlush) return '플러시'; // * 2.5
+  if (isStraight) return '스트레이트'; // *2.0
+  if (counts.includes(3)) return '트리플'; // *1.5
+  if (counts.filter((count) => count === 2).length === 2) return '투페어'; // *1.2
+  if (counts.includes(2)) return '원페어'; // *1.1
+  return '하이카드'; // *1.0
 }
 
-// 스트레이트 처리 방식
 function isStraightHand(values) {
   const order = 'A23456789TJQKA';
   const sortedValues = values
@@ -166,18 +183,17 @@ function isStraightHand(values) {
 
 // 1회만 교환할 수 있다
 function askForExchange(playerHand, exchanged) {
-  return new Promise((resolve) => {
-    console.log('\n현재 핸드: \n' + displayHand(playerHand));
-    console.log('            ▼ ▼ ▼ 교환 가능 여부 ▼ ▼ ▼');
-    console.log(exchanged.map((e, i) => (e ? ' |교환끝| ' : `|   ${i + 1}   | `)).join(' '));
-    rl.question('교환할 카드의 위치를 입력하세요 (1-5), 또는 6을 입력하여 완료: ', (answer) => {
-      resolve(parseInt(answer));
-    });
-  });
+  console.log('\n현재 핸드: \n' + displayHand(playerHand));
+  console.log(' ▼ ▼ ▼ 교환 가능 여부 ▼ ▼ ▼');
+  console.log(exchanged.map((e, i) => (e ? ' |교환끝| ' : `| ${i + 1} | `)).join(' '));
+  const answer = readlineSync.question(
+    '교환할 카드의 위치를 입력하세요 (1-5), 또는 100을 입력하여 완료 \n 입력 : ',
+  );
+  return parseInt(answer);
 }
 
 // 포커를 시작할 때
-export async function playPoker() {
+export function playPoker() {
   let deck = createDeck();
   shuffleDeck(deck);
 
@@ -192,9 +208,9 @@ export async function playPoker() {
   let exchanged = new Array(5).fill(false);
 
   while (true) {
-    const position = await askForExchange(playerHand, exchanged);
+    const position = askForExchange(playerHand, exchanged);
 
-    if (position === 6) {
+    if (position === 100) {
       console.log('카드 교환을 완료합니다.');
       break;
     }
@@ -208,17 +224,15 @@ export async function playPoker() {
         console.log(`${position}번째 카드는 이미 교환했습니다. 다른 카드를 선택하세요.`);
       }
     } else {
-      console.log('잘못된 입력입니다. 1-6 사이의 숫자를 입력하세요.');
+      console.log('잘못된 입력입니다. 1-5 사이의 숫자를 입력하세요.');
     }
   }
 
   console.log('\n최종 핸드: \n' + displayHand(playerHand));
-
   const handRank = evaluateHand(playerHand);
   console.log(`당신의 핸드는 ${handRank}입니다.`);
 
-  rl.close();
+  // 게임 종료 후 사용자 입력 대기
+  console.log('\n엔터를 누르면 로비로 돌아갑니다...');
+  readlineSync.question('');
 }
-
-// 게임 실행
-playPoker();

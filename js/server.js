@@ -5,13 +5,13 @@ import { startGame } from './game.js';
 import { playPoker } from './poker.js';
 
 // 로비 화면을 출력하는 함수
-function displayLobby() {
+export function displayLobby() {
   console.clear();
 
   // 타이틀 텍스트
   console.log(
     chalk.cyan(
-      figlet.textSync('RL- Javascript', {
+      figlet.textSync('POKER\nROGUELIKE', {
         font: 'Standard',
         horizontalLayout: 'default',
         verticalLayout: 'default',
@@ -45,7 +45,7 @@ function displayLobby() {
 }
 
 // 유저 입력을 받아 처리하는 함수
-function handleUserInput() {
+export async function handleUserInput() {
   const choice = readlineSync.question('입력: ');
 
   switch (choice) {
@@ -65,10 +65,10 @@ function handleUserInput() {
       handleUserInput();
       break;
     case '4':
-      console.log(chalk.blue('구현 준비중입니다.. 게임을 시작하세요'));
-      // 옵션 메뉴 로직을 구현
+      // 포커 테스트
       playPoker();
-      // handleUserInput();
+      displayLobby();
+      handleUserInput();
       break;
     case '5':
       console.log(chalk.red('게임을 종료합니다.'));
@@ -82,9 +82,9 @@ function handleUserInput() {
 }
 
 // 게임 시작 함수
-function start() {
+async function start() {
   displayLobby();
-  handleUserInput();
+  await handleUserInput();
 }
 
 // 게임 실행
