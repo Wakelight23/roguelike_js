@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import figlet from 'figlet';
 import readlineSync from 'readline-sync';
 import { displayLobby, handleUserInput } from './server.js';
 import { playPoker } from './poker.js';
@@ -199,9 +200,36 @@ const battle = async (stage, player, monster) => {
   }
 };
 
+// 플레이어의 스탯 정보
+function displayPlayerStatus(player) {
+  console.log(chalk.magentaBright(`\n====== Player Status ======`));
+  console.log(
+    chalk.blueBright(
+      `| 플레이어 정보 | Level: ${player.level}\n` +
+        `HP: ${player.maxHp}/${player.currentHp}\n` +
+        `공격력: ${player.minAttackDmg}~${player.maxAttackDmg}\n` +
+        `특수공격: ${player.minAttackDmg + player.pokerScore}~${player.maxAttackDmg + player.pokerScore}\n` +
+        `방어력: ${player.def}\n` +
+        `포커 점수: ${player.pokerScore}`,
+    ),
+  );
+  console.log(chalk.magentaBright(`===========================\n`));
+}
+
 export async function startGame() {
   console.clear();
   const player = new Player();
+
+  console.log(chalk.yellow('게임을 시작하기 전에 포커 게임을 진행합니다...'));
+  const initialPokerResult = playPoker();
+  player.pokerScore += initialPokerResult.score;
+  console.log(chalk.yellow(`초기 포커 점수: ${player.pokerScore}`));
+  // Status 표시
+  const line = chalk.magentaBright('#'.repeat(20));
+  console.log(line + ' Player Status ' + line);
+  displayPlayerStatus(player);
+  readlineSync.question('');
+
   let stage = 1;
   while (stage <= 10) {
     const monster = new Monster(stage);
@@ -215,8 +243,10 @@ export async function startGame() {
     console.log(chalk.green(`스테이지 ${stage} 클리어!`));
     player.gainExp(); // 경험치 기록
 
+    console.log(chalk.yellow('포커 게임을 시작합니다... (Press Enter)'));
+    readlineSync.question('');
+
     // 스테이지 클리어 후 포커 게임 시작
-    console.log(chalk.yellow('포커 게임을 시작합니다...'));
     const pokerResult = playPoker();
     player.pokerScore += pokerResult.score;
     console.log(chalk.yellow(`현재 누적 포커 점수: ${player.pokerScore}`));
