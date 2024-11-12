@@ -192,6 +192,48 @@ function askForExchange(playerHand, exchanged) {
   return parseInt(answer);
 }
 
+// 카드 점수 계산 함수
+function calculateCardScore(card) {
+  if (card.value === 'A') return 14;
+  if (card.value === 'K') return 13;
+  if (card.value === 'Q') return 12;
+  if (card.value === 'J') return 11;
+  return parseInt(card.value);
+}
+
+// 핸드 랭크에 따른 배율 계산 함수
+function getHandRankMultiplier(handRank) {
+  switch (handRank) {
+    case '로얄 스트레이트 플러시':
+      return 16.0;
+    case '스트레이트 플러시':
+      return 8.0;
+    case '포카드':
+      return 4.0;
+    case '풀하우스':
+      return 3.0;
+    case '플러시':
+      return 2.5;
+    case '스트레이트':
+      return 2.0;
+    case '트리플':
+      return 1.5;
+    case '투페어':
+      return 1.2;
+    case '원페어':
+      return 1.1;
+    default:
+      return 1.0; // 하이카드
+  }
+}
+
+// pokerScore 계산 함수
+function calculatePokerScore(hand, handRank) {
+  const cardScoreSum = hand.reduce((sum, card) => sum + calculateCardScore(card), 0);
+  const multiplier = getHandRankMultiplier(handRank);
+  return Math.floor(cardScoreSum * multiplier);
+}
+
 // 포커를 시작할 때
 export function playPoker() {
   let deck = createDeck();
@@ -232,7 +274,9 @@ export function playPoker() {
   const handRank = evaluateHand(playerHand);
   console.log(`당신의 핸드는 ${handRank}입니다.`);
 
-  // 게임 종료 후 사용자 입력 대기
-  console.log('\n엔터를 누르면 로비로 돌아갑니다...');
-  readlineSync.question('');
+  const pokerScore = Math.ceil(calculatePokerScore(playerHand, handRank) * 0.1);
+  console.log(`이번 라운드의 포커 점수: ${pokerScore}`);
+
+  // 최종 핸드와 포커 점수 반환
+  return { hand: playerHand, score: pokerScore };
 }
