@@ -46,7 +46,7 @@ export function displayLobby() {
 
 // 유저 입력을 받아 처리하는 함수
 export async function handleUserInput() {
-  const choice = readlineSync.question('입력: ');
+  const choice = readlineSync.question('입력 : ');
 
   switch (choice) {
     case '1':
