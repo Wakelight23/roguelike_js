@@ -31,7 +31,7 @@ function cardToString(card) {
   return createCardVisual(card.value, card.suit);
 }
 
-function createCardVisual(value, suit) {
+export function createCardVisual(value, suit) {
   const topBottom = `┌───────┐\n└───────┘`;
   const empty = `│       │`;
 

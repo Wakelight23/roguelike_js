@@ -3,6 +3,7 @@ import figlet from 'figlet';
 import readlineSync from 'readline-sync';
 import { displayLobby, handleUserInput } from './server.js';
 import { playPoker } from './poker.js';
+import { displayPokerRankings } from './poker_rankings.js';
 
 class Player {
   constructor() {
@@ -121,6 +122,12 @@ function formatTime(date) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+// HP 비율이 낮을수록 도망가기 성공 확률 증가
+function calculateEscapeChance(monster) {
+  const hpRatio = monster.currentHp / monster.maxHp;
+  return 1 - hpRatio * 0.8; // 최소 20% ~ 최대 100% 확률
+}
+
 // 게임을 시작하고 배틀이 시작됐을 때
 const battle = async (stage, player, monster) => {
   let logs = []; // 배틀하고 있을 때 저장할 배열
@@ -205,10 +212,30 @@ const battle = async (stage, player, monster) => {
         }
         break;
       case '4':
-        // 4. 도망가기
+        // 도망가기
+        const escapeChance = calculateEscapeChance(monster);
+        const escapeRoll = Math.random();
+        const escapeLog = `[${timestamp}] ${chalk.yellow('플레이어가 도망가기를 시도합니다.')}`;
+        logs.push(escapeLog);
+        fullLogs.push(escapeLog);
+
+        if (escapeRoll < escapeChance) {
+          // 도망 성공
+          const successLog = `[${timestamp}] ${chalk.green('도망가기 성공! 전투에서 벗어났습니다.')}`;
+          logs.push(successLog);
+          fullLogs.push(successLog);
+          return 'escape'; // 도망 성공을 나타내는 특별한 값 반환
+        } else {
+          // 도망 실패
+          const failLog = `[${timestamp}] ${chalk.red('도망가기 실패! 전투를 계속합니다.')}`;
+          logs.push(failLog);
+          fullLogs.push(failLog);
+        }
         break;
       case '100':
-        // 5. 족보확인
+        // 족보 확인
+        displayPokerRankings();
+        readlineSync.question(''); // 엔터 입력 대기
         break;
       case '998':
         // 998.게임로그
@@ -238,10 +265,16 @@ const battle = async (stage, player, monster) => {
         }
         break;
       default:
-        console.log('1~4, 100, 999 중에서 입력해주세요');
+        console.log('잘못된 입력입니다. 선택지에 있는 번호만 입력해주세요');
         break;
     }
-    if (monster.currentHp > 0 && choice != '3' && choice != '998' && choice != '999') {
+    if (
+      monster.currentHp > 0 &&
+      choice != '3' &&
+      choice != '998' &&
+      choice != '999' &&
+      choice != '100'
+    ) {
       const monsterDamage = monster.attack(player);
       const monsterAttackLog = `[${timestamp}] ${chalk.red(`몬스터가 플레이어에게 ${monsterDamage}의 데미지를 입혔습니다.`)}`;
       logs.push(monsterAttackLog);
@@ -292,10 +325,15 @@ export async function startGame() {
     // Status 표시 후 battle 시작
     const battleResult = await battle(stage, player, monster);
     // battle()에서 나온 결과물에 따라서
-    if (!battleResult) {
+    if (battleResult === false) {
       console.log(chalk.red('게임 오버! 메인 메뉴로 돌아갑니다.'));
       break;
+    } else if (battleResult === 'escape') {
+      console.log(chalk.yellow('도망에 성공했습니다. 다음 스테이지로 넘어갑니다.'));
+      stage++;
+      continue; // 포커 게임을 건너뛰고 다음 스테이지로
     }
+
     // 스테이지를 클리어 했을 때
     console.log(chalk.green(`스테이지 ${stage} 클리어!`));
     player.gainExp(); // 경험치 기록
