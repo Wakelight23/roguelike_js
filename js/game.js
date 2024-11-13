@@ -13,8 +13,8 @@ class Player {
     this.minAttackDmg = 8;
     this.maxAttackDmg = 12;
     this.pokerScore = 0; // 포커 점수
-    this.def = 0; // 방어력
-    this.dog = 0; // 회피율
+    this.def = 1; // 방어력
+    this.dog = 1; // 회피율
   }
 
   attack(monster) {
@@ -90,8 +90,24 @@ function displayStatus(stage, player, monster) {
   console.log(chalk.magentaBright(`===========================\n`));
   console.log(chalk.magentaBright(`\n====== Player Status ======`));
   console.log(
+    chalk.whiteBright(`
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠯⡯⢧⠀⡠⢋⡀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⢀⡰⡀⠀⠀⠠⠐⣁⣉⢸⣬⠁⠀⠉⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠈⠝⢛⣦⣀⣄⣞⣿⣳⣟⢿⣷⢤⡀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⣷⣳⣷⣳⡽⣫⣯⡿⠇⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡨⣴⢟⣷⢿⣽⣷⡁⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠔⠙⢽⡽⣯⢾⣽⣾⣷⡃⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠑⢠⣷⡿⡽⡽⣾⢯⣿⠇⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⣴⠏⢉⣯⣿⠝⢽⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠘⠁⠀⣯⣷⠅⠀⢘⣗⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠈⠙⠷⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⡯⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    `),
+  );
+  console.log(
     chalk.blueBright(
-      `| 플레이어 정보 |\nLv:${player.level} HP:${player.maxHp}/${player.currentHp} 공격력:${player.minAttackDmg}~${player.maxAttackDmg} 특수공격:${player.minAttackDmg + player.pokerScore}~${player.maxAttackDmg + player.pokerScore} 방어력:${player.def}`,
+      `         | 플레이어 정보 |\nLv:${player.level} HP:${player.maxHp}/${player.currentHp} 공격력:${player.minAttackDmg}~${player.maxAttackDmg} 특수공격:${player.minAttackDmg + player.pokerScore}~${player.maxAttackDmg + player.pokerScore} 방어력:${player.def}`,
     ),
   );
   console.log(chalk.magentaBright(`===========================\n`));
@@ -107,7 +123,8 @@ function formatTime(date) {
 
 // 게임을 시작하고 배틀이 시작됐을 때
 const battle = async (stage, player, monster) => {
-  let logs = [];
+  let logs = []; // 배틀하고 있을 때 저장할 배열
+  let fullLogs = []; // 전체 로그를 저장할 배열
 
   while (player.currentHp > 0 && monster.currentHp > 0) {
     console.clear();
@@ -116,7 +133,7 @@ const battle = async (stage, player, monster) => {
     const line = chalk.magentaBright('━'.repeat(50));
     const line2 = chalk.magentaBright('━'.repeat(20));
     console.log(line2 + ' Game Log ' + line2);
-    logs.forEach((log) => console.log(log));
+    logs.slice(-6).forEach((log) => console.log(log));
     console.log(line);
 
     console.log(
@@ -124,7 +141,7 @@ const battle = async (stage, player, monster) => {
     );
     console.log(
       chalk.green(
-        `1.일반공격 | 2.특수공격(dmg+poker score) | 3.방어 | 4.도망가기 | 100.포기하기(게임종료)`,
+        `1.일반공격 | 2.특수공격(dmg+poker score) | 3.방어 | 4.도망가기 |\n100.족보확인 | 998.게임로그 | 999.포기하기(게임종료)`,
       ),
     );
     console.log(
@@ -135,39 +152,76 @@ const battle = async (stage, player, monster) => {
     // 타임 스탬프를 찍어서 어떤 것을 최근의 선택했는지 알 수 있도록
     const choice = readlineSync.question('당신의 선택은? ');
     const timestamp = formatTime(new Date());
-    logs.push(`[${timestamp}] ${chalk.green(`${choice}를 선택하셨습니다.`)}`);
+    const newLog = `[${timestamp}] ${chalk.green(`${choice}를 선택하셨습니다.`)}`;
+    logs.push(newLog);
+    fullLogs.push(newLog);
 
     switch (choice) {
       // 1. 일반 공격
       case '1':
-        // 일반 공격
         const playerDamage = player.attack(monster);
-        logs.push(
-          `[${timestamp}] ${chalk.yellow(`플레이어가 몬스터에게 ${playerDamage}의 데미지를 입혔습니다.`)}`,
-        );
+        const playerAttackLog = `[${timestamp}] ${chalk.yellow(`플레이어가 몬스터에게 ${playerDamage}의 데미지를 입혔습니다.`)}`;
+        logs.push(playerAttackLog);
+        fullLogs.push(playerAttackLog);
         if (monster.currentHp === 0) {
-          logs.push(`[${timestamp}] ${chalk.green('몬스터를 물리쳤습니다!')}`);
+          const winLog = `[${timestamp}] ${chalk.green('몬스터를 물리쳤습니다!')}`;
+          logs.push(winLog);
+          fullLogs.push(winLog);
           return true; // 전투 승리
         }
         break;
       // 2.특수공격
       case '2':
         const playerSDmg = player.sAttack(monster);
-        logs.push(
-          `[${timestamp}] ${chalk.yellow(`플레이어가 몬스터에게 특수 공격으로 ${playerSDmg}의 데미지를 입혔습니다. (포커 점수: ${player.pokerScore})`)}`,
-        );
+        const playerSAttLog = `[${timestamp}] ${chalk.yellow(`플레이어가 몬스터에게 특수 공격으로 ${playerSDmg}의 데미지를 입혔습니다. (포커 점수: ${player.pokerScore})`)}`;
+        logs.push(playerSAttLog);
+        fullLogs.push(playerSAttLog);
         if (monster.currentHp === 0) {
           logs.push(`[${timestamp}] ${chalk.green('몬스터를 물리쳤습니다!')}`);
           return true; // 전투 승리
         }
         break;
-      // 아이템 사용
+      // 방어하기
       case '3':
-        console.log('미구현');
+        // 방어하기
+        const originalDef = player.def;
+        player.def *= 4;
+        const defLog = `[${timestamp}] ${chalk.blue(`몬스터의 공격에 대비합니다`)}`;
+        logs.push(defLog);
+        fullLogs.push(defLog);
+        // 몬스터의 공격
+        const monsterDamage = monster.attack(player);
+        const monsterDmgLog = `[${timestamp}] ${chalk.red(`몬스터가 플레이어에게 ${monsterDamage}의 데미지를 입혔습니다.`)}`;
+        logs.push(monsterDmgLog);
+        fullLogs.push(monsterDmgLog);
+        // 방어가 끝나면 다시 원래 방어력으로
+        player.def = originalDef;
+        // 방어를 했음에도 플레이어가 쓰러진다면
+        if (player.currentHp === 0) {
+          const gameOverLog = `[${timestamp}] ${chalk.red('플레이어가 쓰러졌습니다. 게임 오버!')}`;
+          logs.push(gameOverLog);
+          fullLogs.push(gameOverLog);
+          return false; // 전투 패배
+        }
         break;
       case '4':
+        // 4. 도망가기
         break;
       case '100':
+        // 5. 족보확인
+        break;
+      case '998':
+        // 998.게임로그
+        console.clear();
+        console.log(line2 + ' 전체 게임 로그 ' + line2);
+        fullLogs.forEach((log) => console.log(log));
+        console.log(line);
+        console.log(chalk.green('엔터를 누르면 현재 스테이지로 돌아갑니다.'));
+        readlineSync.question('');
+        break;
+        break;
+      case '999':
+        // 999. 게임종료(게임포기)
         console.log('시작 화면으로 돌아갑니다... 정말로요...?\n');
         const choice2 = readlineSync.question('Y or N : ');
         if (choice2 === 'Y' || choice2 === 'y') {
@@ -184,16 +238,18 @@ const battle = async (stage, player, monster) => {
         }
         break;
       default:
-        console.log('1~4, 100 중에서 입력해주세요');
+        console.log('1~4, 100, 999 중에서 입력해주세요');
         break;
     }
-    if (monster.currentHp > 0 && choice != '100') {
+    if (monster.currentHp > 0 && choice != '3' && choice != '998' && choice != '999') {
       const monsterDamage = monster.attack(player);
-      logs.push(
-        `[${timestamp}] ${chalk.red(`몬스터가 플레이어에게 ${monsterDamage}의 데미지를 입혔습니다.`)}`,
-      );
+      const monsterAttackLog = `[${timestamp}] ${chalk.red(`몬스터가 플레이어에게 ${monsterDamage}의 데미지를 입혔습니다.`)}`;
+      logs.push(monsterAttackLog);
+      fullLogs.push(monsterAttackLog);
       if (player.currentHp === 0) {
-        logs.push(`[${timestamp}] ${chalk.red('플레이어가 쓰러졌습니다. 게임 오버!')}`);
+        const gameOverLog = `[${timestamp}] ${chalk.red('플레이어가 쓰러졌습니다. 게임 오버!')}`;
+        logs.push(gameOverLog);
+        fullLogs.push(gameOverLog);
         return false; // 전투 패배
       }
     }
@@ -202,7 +258,6 @@ const battle = async (stage, player, monster) => {
 
 // 플레이어의 스탯 정보
 function displayPlayerStatus(player) {
-  console.log(chalk.magentaBright(`\n====== Player Status ======`));
   console.log(
     chalk.blueBright(
       `| 플레이어 정보 | Level: ${player.level}\n` +
@@ -213,7 +268,8 @@ function displayPlayerStatus(player) {
         `포커 점수: ${player.pokerScore}`,
     ),
   );
-  console.log(chalk.magentaBright(`===========================\n`));
+  const line = chalk.magentaBright('#'.repeat(55));
+  console.log(line);
 }
 
 export async function startGame() {
@@ -224,15 +280,16 @@ export async function startGame() {
   const initialPokerResult = playPoker();
   player.pokerScore += initialPokerResult.score;
   console.log(chalk.yellow(`초기 포커 점수: ${player.pokerScore}`));
-  // Status 표시
-  const line = chalk.magentaBright('#'.repeat(20));
-  console.log(line + ' Player Status ' + line);
-  displayPlayerStatus(player);
-  readlineSync.question('');
 
   let stage = 1;
   while (stage <= 10) {
     const monster = new Monster(stage);
+    // Status 표시
+    const line = chalk.magentaBright('#'.repeat(20));
+    console.log(line + ' Player Status ' + line);
+    displayPlayerStatus(player);
+    readlineSync.question('');
+    // Status 표시 후 battle 시작
     const battleResult = await battle(stage, player, monster);
     // battle()에서 나온 결과물에 따라서
     if (!battleResult) {

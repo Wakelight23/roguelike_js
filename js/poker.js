@@ -59,7 +59,7 @@ function createCardVisual(value, suit) {
     empty,
     `│   ${coloredSuit}   │`,
     empty,
-    `│     ${displayValue.split('').reverse().join('')}│`,
+    `│     ${displayValue.split('').join('')}│`,
   ];
 
   // 숫자에 따라 심볼 배치
@@ -157,16 +157,16 @@ function evaluateHand(hand) {
     values.includes('A') &&
     values.includes('K');
 
-  if (isRoyalStraightFlush) return '로얄 스트레이트 플러시'; // *16.0
-  if (isFlush && isStraight) return '스트레이트 플러시'; // * 8.0
-  if (counts.includes(4)) return '포카드'; // * 4.0
-  if (counts.includes(3) && counts.includes(2)) return '풀하우스'; // *3.0
-  if (isFlush) return '플러시'; // * 2.5
-  if (isStraight) return '스트레이트'; // *2.0
-  if (counts.includes(3)) return '트리플'; // *1.5
-  if (counts.filter((count) => count === 2).length === 2) return '투페어'; // *1.2
-  if (counts.includes(2)) return '원페어'; // *1.1
-  return '하이카드'; // *1.0
+  if (isRoyalStraightFlush) return chalk.bgRed('로얄 스트레이트 플러시'); // *16.0
+  if (isFlush && isStraight) return chalk.bgYellow('스트레이트 플러시'); // * 8.0
+  if (counts.includes(4)) return chalk.greenBright('포카드'); // * 4.0
+  if (counts.includes(3) && counts.includes(2)) return chalk.blue('풀하우스'); // *3.0
+  if (isFlush) return chalk.blueBright('플러시'); // * 2.5
+  if (isStraight) return chalk.blueBright('스트레이트'); // *2.0
+  if (counts.includes(3)) return chalk.whiteBright('트리플'); // *1.5
+  if (counts.filter((count) => count === 2).length === 2) return chalk.whiteBright('투페어'); // *1.2
+  if (counts.includes(2)) return chalk.whiteBright('원페어'); // *1.1
+  return chalk.grey('하이카드'); // *1.0
 }
 
 function isStraightHand(values) {
@@ -185,9 +185,13 @@ function isStraightHand(values) {
 function askForExchange(playerHand, exchanged) {
   console.log('\n현재 핸드: \n' + displayHand(playerHand));
   console.log(' ▼ ▼ ▼ 교환 가능 여부 ▼ ▼ ▼');
-  console.log(exchanged.map((e, i) => (e ? ' |교환끝| ' : `| ${i + 1} | `)).join(' '));
+  console.log(
+    exchanged
+      .map((e, i) => (e ? chalk.redBright(' |교환끝| ') : chalk.blueBright(`| ${i + 1} | `)))
+      .join(' '),
+  );
   const answer = readlineSync.question(
-    '교환할 카드의 위치를 입력하세요 (1-5), 또는 100을 입력하여 완료 \n 입력 : ',
+    '교환할 카드의 위치를 입력하세요 (1-5), 또는 111을 입력하여 완료 \n 입력 : ',
   );
   return parseInt(answer);
 }
@@ -231,7 +235,7 @@ function getHandRankMultiplier(handRank) {
 function calculatePokerScore(hand, handRank) {
   const cardScoreSum = hand.reduce((sum, card) => sum + calculateCardScore(card), 0);
   const multiplier = getHandRankMultiplier(handRank);
-  return Math.floor(cardScoreSum * multiplier);
+  return Math.floor(cardScoreSum * 0.1 * multiplier);
 }
 
 // 포커를 시작할 때
@@ -252,8 +256,8 @@ export function playPoker() {
   while (true) {
     const position = askForExchange(playerHand, exchanged);
 
-    if (position === 100) {
-      console.log('카드 교환을 완료합니다.');
+    if (position === 111) {
+      console.log(chalk.yellow('카드 교환을 완료합니다.'));
       break;
     }
 
@@ -274,7 +278,7 @@ export function playPoker() {
   const handRank = evaluateHand(playerHand);
   console.log(`당신의 핸드는 ${handRank}입니다.`);
 
-  const pokerScore = Math.ceil(calculatePokerScore(playerHand, handRank) * 0.1);
+  const pokerScore = Math.ceil(calculatePokerScore(playerHand, handRank));
   console.log(`이번 라운드의 포커 점수: ${pokerScore}`);
 
   // 최종 핸드와 포커 점수 반환
