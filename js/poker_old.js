@@ -1,32 +1,37 @@
 import readlineSync from 'readline-sync';
-import { checkPokerHand } from './achievements.js';
+import { displayLobby } from './server.js';
 import chalk from 'chalk';
 
-const SUITS = ['♠', '♥', '♦', '♣'];
-const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const HAND_SIZE = 5;
-const EXCHANGE_COMPLETE = 111;
-
-const createDeck = () => {
+// 포커 카드 덱을 생성
+function createDeck() {
+  const suits = ['♠', '♥', '♦', '♣'];
+  const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
   const deck = [];
-  for (let suit of SUITS) {
-    for (let value of VALUES) {
+
+  for (let suit of suits) {
+    for (let value of values) {
       deck.push({ suit, value });
     }
   }
-  return deck;
-};
 
-const shuffleDeck = (deck) => {
+  return deck;
+}
+
+// 덱 섞기
+// Fisher-Yates 알고리즘 사용
+function shuffleDeck(deck) {
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
-};
+}
 
-const cardToString = (card) => createCardVisual(card.value, card.suit);
+// 카드 문자열 표현
+function cardToString(card) {
+  return createCardVisual(card.value, card.suit);
+}
 
-export const createCardVisual = (value, suit) => {
+export function createCardVisual(value, suit) {
   const topBottom = `┌───────┐\n└───────┘`;
   const empty = `│       │`;
 
@@ -112,20 +117,25 @@ export const createCardVisual = (value, suit) => {
   }
 
   return topBottom.split('\n')[0] + '\n' + lines.join('\n') + '\n' + topBottom.split('\n')[1];
-};
+}
 
-const displayHand = (hand) => {
+// 핸드 표시
+function displayHand(hand) {
   const cardVisuals = hand.map((card) => createCardVisual(card.value, card.suit).split('\n'));
   let display = '';
   for (let i = 0; i < cardVisuals[0].length; i++) {
     display += cardVisuals.map((card) => card[i]).join(' ') + '\n';
   }
   return display;
-};
+}
 
-const drawCard = (deck) => deck.pop();
+// 카드 한 장 뽑기
+function drawCard(deck) {
+  return deck.pop();
+}
 
-const evaluateHand = (hand) => {
+// 핸드 평가 함수
+function evaluateHand(hand) {
   const values = hand.map((card) => card.value);
   const suits = hand.map((card) => card.suit);
 
@@ -147,19 +157,19 @@ const evaluateHand = (hand) => {
     values.includes('A') &&
     values.includes('K');
 
-  if (isRoyalStraightFlush) return '로얄 스트레이트 플러시'; // *16.0
-  if (isFlush && isStraight) return '스트레이트 플러시'; // * 8.0
-  if (counts.includes(4)) return '포카드'; // * 4.0
-  if (counts.includes(3) && counts.includes(2)) return '풀하우스'; // *3.0
-  if (isFlush) return '플러시'; // * 2.5
-  if (isStraight) return '스트레이트'; // *2.0
-  if (counts.includes(3)) return '트리플'; // *1.5
-  if (counts.filter((count) => count === 2).length === 2) return '투페어'; // *1.2
-  if (counts.includes(2)) return '원페어'; // *1.1
-  return '하이카드'; // *1.0
-};
+  if (isRoyalStraightFlush) return chalk.bgRed('로얄 스트레이트 플러시'); // *16.0
+  if (isFlush && isStraight) return chalk.bgYellow('스트레이트 플러시'); // * 8.0
+  if (counts.includes(4)) return chalk.greenBright('포카드'); // * 4.0
+  if (counts.includes(3) && counts.includes(2)) return chalk.blue('풀하우스'); // *3.0
+  if (isFlush) return chalk.blueBright('플러시'); // * 2.5
+  if (isStraight) return chalk.blueBright('스트레이트'); // *2.0
+  if (counts.includes(3)) return chalk.whiteBright('트리플'); // *1.5
+  if (counts.filter((count) => count === 2).length === 2) return chalk.whiteBright('투페어'); // *1.2
+  if (counts.includes(2)) return chalk.whiteBright('원페어'); // *1.1
+  return chalk.grey('하이카드'); // *1.0
+}
 
-const isStraightHand = (values) => {
+function isStraightHand(values) {
   const order = 'A23456789TJQKA';
   const sortedValues = values
     .map((v) => (v === '10' ? 'T' : v))
@@ -169,9 +179,10 @@ const isStraightHand = (values) => {
     indices.every((v, i) => i === 0 || v === indices[i - 1] + 1) ||
     (indices[0] === 0 && indices[1] === 9 && indices[4] === 12)
   ); // A-10-J-Q-K 스트레이트 처리
-};
+}
 
-const askForExchange = (playerHand, exchanged) => {
+// 1회만 교환할 수 있다
+function askForExchange(playerHand, exchanged) {
   console.log('\n현재 핸드: \n' + displayHand(playerHand));
   console.log(' ▼ ▼ ▼ 교환 가능 여부 ▼ ▼ ▼');
   console.log(
@@ -180,39 +191,48 @@ const askForExchange = (playerHand, exchanged) => {
       .join(' '),
   );
   const answer = readlineSync.question(
-    `교환할 카드의 위치를 입력하세요 (1-${HAND_SIZE}), 또는 ${EXCHANGE_COMPLETE}을 입력하여 완료 \n 입력 : `,
+    '교환할 카드의 위치를 입력하세요 (1-5), 또는 111을 입력하여 완료 \n 입력 : ',
   );
   return parseInt(answer);
-};
+}
 
-const calculateCardScore = (card) => {
-  if (typeof card !== 'object' || !card.value) {
-    throw new Error('Invalid card object');
-  }
+// 카드 점수 계산 함수
+function calculateCardScore(card) {
   if (card.value === 'A') return 14;
   if (card.value === 'K') return 13;
   if (card.value === 'Q') return 12;
   if (card.value === 'J') return 11;
   return parseInt(card.value);
-};
+}
 
-const getHandRankMultiplier = (handRank) => {
-  const multipliers = {
-    '로얄 스트레이트 플러시': 512,
-    '스트레이트 플러시': 256,
-    포카드: 128,
-    풀하우스: 64,
-    플러시: 40,
-    스트레이트: 32,
-    트리플: 16,
-    투페어: 8,
-    원페어: 4,
-  };
-  return multipliers[handRank] || 2; // 하이카드
-};
+// 핸드 랭크에 따른 배율 계산 함수
+function getHandRankMultiplier(handRank) {
+  switch (handRank) {
+    case '로얄 스트레이트 플러시':
+      return 16.0;
+    case '스트레이트 플러시':
+      return 8.0;
+    case '포카드':
+      return 4.0;
+    case '풀하우스':
+      return 3.0;
+    case '플러시':
+      return 2.5;
+    case '스트레이트':
+      return 2.0;
+    case '트리플':
+      return 1.5;
+    case '투페어':
+      return 1.2;
+    case '원페어':
+      return 1.1;
+    default:
+      return 0.8; // 하이카드
+  }
+}
 
-// 카드 랭크 별 가장 높은 수의 카드 판별
-const getRankingCards = (hand, handRank) => {
+// 내 손에 있는 카드 랭크 안에 있는 카드 중 가장 큰 숫자
+function getRankingCards(hand, handRank) {
   const values = hand.map((card) => card.value);
   const valueCounts = {};
   values.forEach((value) => {
@@ -245,36 +265,40 @@ const getRankingCards = (hand, handRank) => {
         ),
       ];
   }
-};
+}
 
-// 포커 점수 계산
-const calculatePokerScore = (hand, handRank) => {
-  if (!Array.isArray(hand) || typeof handRank !== 'string') {
-    throw new Error('Invalid input for calculatePokerScore');
-  }
+// pokerScore 계산 함수
+function calculatePokerScore(hand, handRank) {
   const rankingCards = getRankingCards(hand, handRank);
-  const highestCard = Math.max(...rankingCards.map(calculateCardScore));
-  return Math.floor(highestCard + getHandRankMultiplier(handRank));
-};
+  const highestCard = Math.max(...rankingCards.map((card) => calculateCardScore(card)));
+  const multiplier = getHandRankMultiplier(handRank);
+  return Math.floor(highestCard * multiplier);
+}
 
-// 포커 게임의 시작
-export const playPoker = () => {
+// 포커를 시작할 때
+export function playPoker() {
   let deck = createDeck();
   shuffleDeck(deck);
-  let playerHand = Array(HAND_SIZE)
-    .fill()
-    .map(() => drawCard(deck));
+
+  let playerHand = [];
+  for (let i = 0; i < 5; i++) {
+    playerHand.push(drawCard(deck));
+  }
 
   console.log('초기 핸드: \n' + displayHand(playerHand));
-  let exchanged = new Array(HAND_SIZE).fill(false);
+
+  // 카드 교환
+  let exchanged = new Array(5).fill(false);
 
   while (true) {
     const position = askForExchange(playerHand, exchanged);
-    if (position === EXCHANGE_COMPLETE) {
+
+    if (position === 111) {
       console.log(chalk.yellow('카드 교환을 완료합니다.'));
       break;
     }
-    if (position >= 1 && position <= HAND_SIZE) {
+
+    if (position >= 1 && position <= 5) {
       if (!exchanged[position - 1]) {
         console.log(`${position}번째 카드를 교환합니다.`);
         playerHand[position - 1] = drawCard(deck);
@@ -283,29 +307,40 @@ export const playPoker = () => {
         console.log(`${position}번째 카드는 이미 교환했습니다. 다른 카드를 선택하세요.`);
       }
     } else {
-      console.log(`잘못된 입력입니다. 1-${HAND_SIZE} 사이의 숫자를 입력하세요.`);
+      console.log('잘못된 입력입니다. 1-5 사이의 숫자를 입력하세요.');
     }
   }
 
   console.log('\n최종 핸드: \n' + displayHand(playerHand));
   const handRank = evaluateHand(playerHand);
-  checkPokerHand(handRank);
-  console.log(`당신의 핸드는 ${chalk.cyanBright(handRank)} 입니다.`);
+  console.log(`당신의 핸드는 ${handRank}입니다.`);
 
+  // 디버깅을 위한 추가 정보 출력
   const rankingCards = getRankingCards(playerHand, handRank);
   console.log(
     '랭킹에 포함된 카드:',
     rankingCards.map((card) => `${card.value}${card.suit}`).join(', '),
   );
 
-  const highestCard = Math.max(...rankingCards.map(calculateCardScore));
+  const highestCard = Math.max(...rankingCards.map((card) => calculateCardScore(card)));
   console.log('가장 높은 카드 점수:', highestCard);
 
   const multiplier = getHandRankMultiplier(handRank);
-  console.log('핸드 랭크 보너스 점수:', multiplier);
+  console.log('핸드 랭크 배율:', multiplier);
 
   const pokerScore = Math.ceil(calculatePokerScore(playerHand, handRank));
   console.log(`이번 라운드의 포커 점수: ${pokerScore}`);
 
+  // 최종 핸드와 포커 점수 반환
   return { hand: playerHand, score: pokerScore };
-};
+
+  // console.log('\n최종 핸드: \n' + displayHand(playerHand));
+  // const handRank = evaluateHand(playerHand);
+  // console.log(`당신의 핸드는 ${handRank}입니다.`);
+
+  // const pokerScore = Math.ceil(calculatePokerScore(playerHand, handRank));
+  // console.log(`이번 라운드의 포커 점수: ${pokerScore}`);
+
+  // 최종 핸드와 포커 점수 반환
+  // return { hand: playerHand, score: pokerScore };
+}

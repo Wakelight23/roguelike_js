@@ -3,6 +3,13 @@ import figlet from 'figlet';
 import readlineSync from 'readline-sync';
 import { startGame } from './game.js';
 import { playPoker } from './poker.js';
+import {
+  displayAchievements,
+  loadAchievements,
+  resetAchievements,
+  saveAchievements,
+  validateAchievementsFile,
+} from './achievements.js';
 
 // 로비 화면을 출력하는 함수
 export function displayLobby() {
@@ -55,8 +62,14 @@ export async function handleUserInput() {
       startGame();
       break;
     case '2':
-      console.log(chalk.yellow('구현 준비중입니다.. 게임을 시작하세요'));
       // 업적 확인하기 로직을 구현
+      await displayAchievements();
+      const achievementChoice = readlineSync.question('write "reset" : ');
+      if (achievementChoice === 'reset') {
+        console.log('업적이 초기화를 시작합니다. 엔터를 누르면 시작합니다...');
+        resetAchievements();
+      }
+      displayLobby();
       handleUserInput();
       break;
     case '3':
@@ -67,13 +80,16 @@ export async function handleUserInput() {
     case '4':
       // 포커 테스트
       playPoker();
+      readlineSync.question('');
       displayLobby();
       handleUserInput();
       break;
     case '5':
       console.log(chalk.red('게임을 종료합니다.'));
-      // 게임 종료 로직을 구현
-      process.exit(0); // 게임 종료
+      await saveAchievements(); // 게임 종료 전 업적 저장 (한 번만 호출)
+      console.log('업적이 저장되었습니다. 엔터를 눌러 종료하세요.');
+      readlineSync.question('');
+      process.exit(0);
       break;
     default:
       console.log(chalk.red('올바른 선택을 하세요.'));
@@ -83,6 +99,10 @@ export async function handleUserInput() {
 
 // 게임 시작 함수
 async function start() {
+  console.log('업적을 불러옵니다.');
+  await validateAchievementsFile();
+  await loadAchievements();
+  readlineSync.question('');
   displayLobby();
   await handleUserInput();
 }
