@@ -16,7 +16,7 @@ export function displayPokerRankings() {
         { suit: '♠', value: 'K' },
         { suit: '♠', value: 'A' },
       ],
-      multiplier: 16.0,
+      multiplier: 512,
     },
     {
       name: '스트레이트 플러시',
@@ -28,7 +28,7 @@ export function displayPokerRankings() {
         { suit: '♥', value: '8' },
         { suit: '♥', value: '9' },
       ],
-      multiplier: 8.0,
+      multiplier: 256,
     },
     {
       name: '포카드',
@@ -40,7 +40,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: 'K' },
         { suit: '♠', value: '2' },
       ],
-      multiplier: 4.0,
+      multiplier: 128,
     },
     {
       name: '풀하우스',
@@ -52,7 +52,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: '4' },
         { suit: '♠', value: '4' },
       ],
-      multiplier: 3.0,
+      multiplier: 64,
     },
     {
       name: '플러시',
@@ -64,7 +64,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: '9' },
         { suit: '♣', value: 'K' },
       ],
-      multiplier: 2.5,
+      multiplier: 40,
     },
     {
       name: '스트레이트',
@@ -76,7 +76,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: '6' },
         { suit: '♠', value: '7' },
       ],
-      multiplier: 2.0,
+      multiplier: 32,
     },
     {
       name: '트리플',
@@ -88,7 +88,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: '3' },
         { suit: '♠', value: 'K' },
       ],
-      multiplier: 1.5,
+      multiplier: 16,
     },
     {
       name: '투페어',
@@ -100,7 +100,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: 'Q' },
         { suit: '♠', value: '2' },
       ],
-      multiplier: 1.2,
+      multiplier: 8,
     },
     {
       name: '원페어',
@@ -112,7 +112,7 @@ export function displayPokerRankings() {
         { suit: '♣', value: '8' },
         { suit: '♠', value: 'J' },
       ],
-      multiplier: 1.1,
+      multiplier: 4,
     },
     {
       name: '하이카드',
@@ -124,12 +124,12 @@ export function displayPokerRankings() {
         { suit: '♣', value: 'J' },
         { suit: '♠', value: 'K' },
       ],
-      multiplier: 1.0,
+      multiplier: 2,
     },
   ];
 
   rankings.forEach((ranking) => {
-    console.log(chalk.cyan(`${ranking.name} (x${ranking.multiplier})`));
+    console.log(chalk.cyan(`${ranking.name} (+${ranking.multiplier})`));
     console.log(chalk.white(ranking.description));
     console.log(displayHand(ranking.example));
     console.log();

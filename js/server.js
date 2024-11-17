@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import readlineSync from 'readline-sync';
 import { startGame } from './game.js';
+import { displayPokerRankings } from './poker_rankings.js';
 import { playPoker } from './poker.js';
 import {
   displayAchievements,
@@ -34,14 +35,17 @@ export function displayLobby() {
   console.log(chalk.yellowBright.bold('CLI 게임에 오신것을 환영합니다!'));
 
   // 설명 텍스트
+  console.log(chalk.redBright('!!!전체화면으로 플레이하는 것을 추천드립니다!!!'));
   console.log(chalk.green('옵션을 선택해주세요.'));
   console.log();
 
   // 옵션들
   console.log(chalk.blue('1.') + chalk.white(' 새로운 게임 시작'));
   console.log(chalk.blue('2.') + chalk.white(' 업적 확인하기'));
-  console.log(chalk.blue('3.') + chalk.white(' 옵션'));
-  console.log(chalk.blue('4.') + chalk.white(' 포커 테스트'));
+  console.log(
+    chalk.blue('3.') + chalk.white(` 포커 족보 ${chalk.redBright('(포커를 처음한다면 확인!!)')}`),
+  );
+  console.log(chalk.blue('4.') + chalk.white(' 포커 연습'));
   console.log(chalk.blue('5.') + chalk.white(' 종료'));
 
   // 하단 경계선
@@ -58,7 +62,6 @@ export async function handleUserInput() {
   switch (choice) {
     case '1':
       console.log(chalk.green('게임을 시작합니다.'));
-      // 여기에서 새로운 게임 시작 로직을 구현
       startGame();
       break;
     case '2':
@@ -73,12 +76,14 @@ export async function handleUserInput() {
       handleUserInput();
       break;
     case '3':
-      console.log(chalk.blue('구현 준비중입니다.. 게임을 시작하세요'));
-      // 옵션 메뉴 로직을 구현
+      // 포커 족보
+      displayPokerRankings();
+      readlineSync.question('');
+      displayLobby();
       handleUserInput();
       break;
     case '4':
-      // 포커 테스트
+      // 포커 연습
       playPoker();
       readlineSync.question('');
       displayLobby();

@@ -33,7 +33,7 @@ const achievements = [
   {
     id: 'high_attack',
     name: '이게 가능했었어...?',
-    description: 'Player maxAttackDmg 500 달성',
+    description: '최대 공격력 500 달성',
     achieved: false,
   },
   {

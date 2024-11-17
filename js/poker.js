@@ -171,7 +171,8 @@ const isStraightHand = (values) => {
   ); // A-10-J-Q-K 스트레이트 처리
 };
 
-const askForExchange = (playerHand, exchanged) => {
+const askForExchange = (playerHand, exchanged, exchangeCount = 0, player) => {
+  // player 매개변수 추가
   console.log('\n현재 핸드: \n' + displayHand(playerHand));
   console.log(' ▼ ▼ ▼ 교환 가능 여부 ▼ ▼ ▼');
   console.log(
@@ -179,6 +180,12 @@ const askForExchange = (playerHand, exchanged) => {
       .map((e, i) => (e ? chalk.redBright(' |교환끝| ') : chalk.blueBright(`| ${i + 1} | `)))
       .join(' '),
   );
+
+  // player가 존재하고 extraPokerExchange가 true일 때만 표시
+  if (player?.extraPokerExchange) {
+    console.log(chalk.green(`현재 교환 횟수: ${exchangeCount + 1}/2`));
+  }
+
   const answer = readlineSync.question(
     `교환할 카드의 위치를 입력하세요 (1-${HAND_SIZE}), 또는 ${EXCHANGE_COMPLETE}을 입력하여 완료 \n 입력 : `,
   );
@@ -258,7 +265,7 @@ const calculatePokerScore = (hand, handRank) => {
 };
 
 // 포커 게임의 시작
-export const playPoker = () => {
+export const playPoker = (player) => {
   let deck = createDeck();
   shuffleDeck(deck);
   let playerHand = Array(HAND_SIZE)
@@ -268,12 +275,18 @@ export const playPoker = () => {
   console.log('초기 핸드: \n' + displayHand(playerHand));
   let exchanged = new Array(HAND_SIZE).fill(false);
 
-  while (true) {
-    const position = askForExchange(playerHand, exchanged);
+  // 포커의축복 능력이 있는 경우 교환 횟수 증가
+  const maxExchanges = player?.extraPokerExchange ? 2 : 1;
+  let exchangeCount = 0;
+
+  while (exchangeCount < maxExchanges) {
+    const position = askForExchange(playerHand, exchanged, exchangeCount, player);
+
     if (position === EXCHANGE_COMPLETE) {
       console.log(chalk.yellow('카드 교환을 완료합니다.'));
       break;
     }
+
     if (position >= 1 && position <= HAND_SIZE) {
       if (!exchanged[position - 1]) {
         console.log(`${position}번째 카드를 교환합니다.`);
@@ -284,6 +297,15 @@ export const playPoker = () => {
       }
     } else {
       console.log(`잘못된 입력입니다. 1-${HAND_SIZE} 사이의 숫자를 입력하세요.`);
+    }
+
+    // 모든 카드를 교환했거나 EXCHANGE_COMPLETE를 입력했을 때
+    if (exchanged.every((e) => e) || position === EXCHANGE_COMPLETE) {
+      exchangeCount++;
+      if (exchangeCount < maxExchanges) {
+        console.log(chalk.green('\n추가 교환 기회가 있습니다!'));
+        exchanged = new Array(HAND_SIZE).fill(false);
+      }
     }
   }
 
