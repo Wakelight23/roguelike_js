@@ -8,8 +8,8 @@ const abilities = [
     apply: (player) => {
       player.increasex5 = true;
     },
-    rarity: '레전더리',
-    chance: 0.01,
+    rarity: '에픽',
+    chance: 0.05,
   },
   {
     name: '자연회복',
@@ -17,8 +17,8 @@ const abilities = [
     apply: (player) => {
       player.naturalHealing = true;
     },
-    rarity: '레어',
-    chance: 0.1,
+    rarity: '레전더리',
+    chance: 0.01,
   },
   {
     name: '아이언스킨',
@@ -140,7 +140,7 @@ const abilities = [
   },
   {
     name: '일회용회복',
-    description: '현재 체력의 30%를 회복합니다.',
+    description: '현재 체력의 30%를 즉시 회복합니다.',
     apply: (player) => {
       const healAmount = Math.floor(player.maxHp * 0.3);
       player.currentHp = Math.min(player.maxHp, player.currentHp + healAmount);
@@ -277,13 +277,13 @@ const abilities = [
     apply: (player) => {
       player.extraPokerExchange = true;
     },
-    rarity: '에픽',
-    chance: 0.05,
+    rarity: '언커먼',
+    chance: 0.2,
   },
 ];
 
 // 등급별 색 설정
-const rarityColors = {
+export const rarityColors = {
   커먼: chalk.white,
   언커먼: chalk.green,
   레어: chalk.blue,
@@ -341,26 +341,41 @@ export function chooseAbility(player) {
 
 // 능력을 확률적으로 UI에 표시
 function getRandomAbilities(count, selectedAbilities) {
+  // 이미 선택되지 않은 능력들만 필터링
   const availableAbilities = abilities.filter(
     (ability) => ability.repeatable || !selectedAbilities.includes(ability.name),
   );
 
   const chosenAbilities = [];
-  for (let i = 0; i < count; i++) {
-    if (availableAbilities.length === 0) break;
 
-    const roll = Math.random();
-    let cumulativeProbability = 0;
-    for (let j = 0; j < availableAbilities.length; j++) {
-      const ability = availableAbilities[j];
-      cumulativeProbability += ability.chance;
-      if (roll < cumulativeProbability) {
-        chosenAbilities.push(ability);
-        if (!ability.repeatable) {
-          availableAbilities.splice(j, 1);
+  while (chosenAbilities.length < count && availableAbilities.length > 0) {
+    // 전체 확률의 합 계산
+    const totalChance = availableAbilities.reduce((sum, ability) => sum + ability.chance, 0);
+
+    // 0부터 전체 확률까지의 랜덤 값 생성
+    const roll = Math.random() * totalChance;
+
+    // 누적 확률 계산하며 능력 선택
+    let currentSum = 0;
+    for (let i = 0; i < availableAbilities.length; i++) {
+      currentSum += availableAbilities[i].chance;
+      if (roll <= currentSum) {
+        chosenAbilities.push(availableAbilities[i]);
+        // 선택된 능력이 반복 불가능한 경우 제거
+        if (!availableAbilities[i].repeatable) {
+          availableAbilities.splice(i, 1);
         }
         break;
       }
+    }
+  }
+
+  // 충분한 능력을 선택하지 못한 경우 남은 자리를 채움
+  while (chosenAbilities.length < count && availableAbilities.length > 0) {
+    const randomIndex = Math.floor(Math.random() * availableAbilities.length);
+    chosenAbilities.push(availableAbilities[randomIndex]);
+    if (!availableAbilities[randomIndex].repeatable) {
+      availableAbilities.splice(randomIndex, 1);
     }
   }
 
