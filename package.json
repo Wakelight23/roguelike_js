@@ -4,18 +4,23 @@
   "main": "game.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "title Poker_Roguelike && chcp 65001 && node js/server.js",
+    "dev": "chcp 65001 && nodemon js/server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Wakelight23",
   "license": "ISC",
-  "description": "",
+  "description": "Making roguelike game at js",
+  "type": "module",
   "dependencies": {
     "chalk": "^5.3.0",
     "figlet": "^1.8.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
     "readline-sync": "^1.4.10"
   },
   "devDependencies": {
+    "nodemon": "^3.1.7",
     "prettier": "^3.3.3"
   }
 }
