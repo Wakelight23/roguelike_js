@@ -33,7 +33,7 @@
     "id": "first_game_over",
     "name": "그럴 수 있어",
     "description": "처음 게임오버 한다",
-    "achieved": false
+    "achieved": true
   },
   {
     "id": "even_hands",

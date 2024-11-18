@@ -7,6 +7,7 @@ const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'
 const HAND_SIZE = 5;
 const EXCHANGE_COMPLETE = 111;
 
+// 카드를 저장할 배열 생성하고 suit, value로 모양과 숫자 생성
 const createDeck = () => {
   const deck = [];
   for (let suit of SUITS) {
@@ -17,6 +18,7 @@ const createDeck = () => {
   return deck;
 };
 
+// 카드를 섞는데
 const shuffleDeck = (deck) => {
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

@@ -32,45 +32,59 @@ export class Player {
     }
     damage = Math.max(0, damage - effectiveMonsterDef);
 
-    // 즉사확률 추가
+    let effects = [];
+
+    // 즉사확률
     if (this.criticalHit && Math.random() < 0.01) {
       monster.currentHp = 0;
-      return Infinity;
+      return { damage: Infinity, effects: ['즉사'] };
     }
 
-    // 기본공격 5배
-    if (this.increasex5) {
-      damage *= 5;
+    // 공격력2배
+    if (this.increasex2) {
+      damage *= 2;
+      effects.push('공격력2배');
+    }
+
+    // 공격력4배
+    if (this.increasex4) {
+      damage *= 4;
+      effects.push('공격력4배');
     }
 
     // 광전사
     if (this.berserk && this.currentHp / this.maxHp <= 0.3) {
       damage = Math.floor(damage * 1.5);
+      effects.push('광전사');
     }
 
     // 마지막 일격
     if (this.executeAbility && monster.currentHp / monster.maxHp <= 0.2) {
       damage *= 2;
+      effects.push('마지막일격');
+    }
+
+    // 연속 공격
+    if (this.doubleStrike && Math.random() < 0.2) {
+      damage *= 2;
+      effects.push('연속공격');
+    }
+
+    // 돌진 공격
+    if (this.rushAttack) {
+      this.currentHp -= Math.floor(damage * 0.1);
+      effects.push('돌진공격');
     }
 
     // 흡혈
     if (this.vampiric) {
       const healing = Math.floor(damage * 0.1);
       this.currentHp = Math.min(this.maxHp, this.currentHp + healing);
-    }
-
-    // 연속 공격
-    if (this.doubleStrike && Math.random() < 0.2) {
-      damage *= 2;
-    }
-
-    // 돌진 공격
-    if (this.rushAttack) {
-      this.currentHp -= Math.floor(damage * 0.1);
+      effects.push(`흡혈(+${healing})`);
     }
 
     monster.currentHp = Math.max(0, monster.currentHp - damage);
-    return damage;
+    return { damage, effects };
   }
 
   // 특수공격의 계산 = 카드 슬래쉬
@@ -80,7 +94,7 @@ export class Player {
       let damage =
         Math.floor(Math.random() * (this.maxAttackDmg - this.minAttackDmg + 1)) +
         this.minAttackDmg +
-        (this.pokerMaster ? this.pokerScore * 1.5 : this.pokerScore);
+        (this.pokerMaster ? Math.floor(this.pokerScore * 1.5) : this.pokerScore);
       monster.currentHp = Math.max(0, monster.currentHp - damage);
 
       damage = Math.max(0, damage);
@@ -92,35 +106,54 @@ export class Player {
       }
       damage = Math.max(0, damage - effectiveMonsterDef);
 
-      // 돌진공격이 활성화되면
-      if (this.rushAttack) {
-        this.currentHp -= Math.floor(damage * 0.1);
+      let effects = [];
+
+      // 즉사확률
+      if (this.criticalHit && Math.random() < 0.01) {
+        monster.currentHp = 0;
+        return { damage: Infinity, effects: ['즉사'] };
+      }
+
+      // 기본공격 5배
+      if (this.increasex5) {
+        damage *= 5;
+        effects.push('기본공격5배');
       }
 
       // 광전사
       if (this.berserk && this.currentHp / this.maxHp <= 0.3) {
         damage = Math.floor(damage * 1.5);
+        effects.push('광전사');
       }
 
       // 마지막 일격
       if (this.executeAbility && monster.currentHp / monster.maxHp <= 0.2) {
         damage *= 2;
+        effects.push('마지막일격');
+      }
+
+      // 연속 공격
+      if (this.doubleStrike && Math.random() < 0.2) {
+        damage *= 2;
+        effects.push('연속공격');
+      }
+
+      // 돌진 공격
+      if (this.rushAttack) {
+        this.currentHp -= Math.floor(damage * 0.1);
+        effects.push('돌진공격');
       }
 
       // 흡혈
       if (this.vampiric) {
         const healing = Math.floor(damage * 0.1);
         this.currentHp = Math.min(this.maxHp, this.currentHp + healing);
+        effects.push(`흡혈(+${healing})`);
       }
 
-      // 연속 공격
-      if (this.doubleStrike && Math.random() < 0.2) {
-        damage *= 2;
-      }
-
-      return { success: true, damage };
+      return { success: true, damage, effects };
     } else {
-      return { success: false, damage: 0 };
+      return { success: false, damage: 0, effects: [] };
     }
   }
 
@@ -573,24 +606,33 @@ const battle = async (stage, player, monster) => {
     switch (choice) {
       // 1. 일반 공격
       case '1':
-        const playerDamage = player.attack(monster);
-        const playerAttackLog = `[${timestamp}] ${chalk.yellow(`플레이어가 몬스터에게 ${playerDamage}의 데미지를 입혔습니다.`)}`;
-        if (player.attack(monster) >= 99999) {
-          console.log(chalk.yellow(`급소 공격!! 몬스터가 즉사합니다.`));
+        const attackResult = player.attack(monster);
+        let attackMessage = `플레이어가 몬스터에게 ${attackResult.damage}의 데미지를 입혔습니다.`;
+
+        // 발동된 효과들을 로그에 추가
+        if (attackResult.effects.length > 0) {
+          attackMessage += ` [발동 효과: ${attackResult.effects.join(', ')}]`;
         }
 
+        const playerAttackLog = `[${timestamp}] ${chalk.yellow(attackMessage)}`;
         logs.push(playerAttackLog);
         fullLogs.push(playerAttackLog);
+
         if (monster.currentHp === 0) {
           console.log(chalk.yellow('몬스터를 물리쳤습니다!'));
-          return true; // 전투 승리
+          return true;
         }
         break;
       // 2.특수공격
       case '2':
-        const attackResult = player.sAttack(monster);
-        if (attackResult.success) {
-          const playerSAttLog = `[${timestamp}] ${chalk.yellow(`카드 슬래시!!! ${attackResult.damage}의 데미지를 입혔습니다. (포커 점수: ${player.pokerScore})`)}`;
+        const sAttackResult = player.sAttack(monster);
+        // 발동된 효과들을 로그에 추가
+        if (sAttackResult.success) {
+          // 발동된 효과들을 로그에 추가
+          const playerSAttLog = `[${timestamp}] ${chalk.yellow(`카드 슬래시!!! ${sAttackResult.damage}의 데미지를 입혔습니다.`)}`;
+          if (sAttackResult.effects.length > 0) {
+            playerSAttLog += ` [발동 효과: ${sAttackResult.effects.join(', ')}]`;
+          }
           logs.push(playerSAttLog);
           fullLogs.push(playerSAttLog);
           if (monster.currentHp === 0) {

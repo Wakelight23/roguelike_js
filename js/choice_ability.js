@@ -3,13 +3,22 @@ import readlineSync from 'readline-sync';
 
 const abilities = [
   {
-    name: '기본공격5배',
-    description: '기본 공격력이 5배!! (Player Status에는 추가량이 표시되지 않습니다.)',
+    name: '공격력2배',
+    description: '기본 공격력이 2배 증가합니다 ',
     apply: (player) => {
-      player.increasex5 = true;
+      player.increasex2 = true;
     },
     rarity: '에픽',
     chance: 0.05,
+  },
+  {
+    name: '공격력4배',
+    description: '기본 공격력이 4배 증가합니다 ',
+    apply: (player) => {
+      player.increasex4 = true;
+    },
+    rarity: '레전더리',
+    chance: 0.01,
   },
   {
     name: '자연회복',
