@@ -1,0 +1,50 @@
+[
+  {
+    "id": "game_clear",
+    "name": "게임을 클리어 했다",
+    "description": "stage를 1부터 10까지 전부 클리어",
+    "achieved": false
+  },
+  {
+    "id": "royal_straight_flush",
+    "name": "로오오오야야야르를 스토레이트으 풀라아쉬!!!????",
+    "description": "포커 게임에서 처음으로 로얄 스트레이트 플러시가 나온다",
+    "achieved": false
+  },
+  {
+    "id": "straight_flush",
+    "name": "스트...레이트... 근데 색깔이 다 똑같아!",
+    "description": "포커 게임에서 처음으로 스트레이트 플러시가 나온다",
+    "achieved": false
+  },
+  {
+    "id": "four_of_a_kind",
+    "name": "나야... 포 카드",
+    "description": "포커 게임에서 처음으로 포카드가 나온다",
+    "achieved": false
+  },
+  {
+    "id": "high_attack",
+    "name": "이게 가능했었어...?",
+    "description": "최대 공격력 500 달성",
+    "achieved": false
+  },
+  {
+    "id": "first_game_over",
+    "name": "그럴 수 있어",
+    "description": "처음 게임오버 한다",
+    "achieved": false
+  },
+  {
+    "id": "even_hands",
+    "name": "Even하네요",
+    "description": "투 페어 연속 5번",
+    "achieved": false
+  },
+  {
+    "id": "bad_luck",
+    "name": "오늘은 날이 아니올씨다",
+    "description": "하이카드 연속 5번",
+    "achieved": false
+  }
+]
