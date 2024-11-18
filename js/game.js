@@ -6,7 +6,7 @@ import { displayPokerRankings } from './poker_rankings.js';
 import { checkAchievement } from './achievements.js';
 import { chooseAbility } from './choice_ability.js';
 
-export class Player {
+class Player {
   constructor() {
     this.level = 1;
     this.maxHp = 200;
@@ -251,10 +251,10 @@ class Monster {
         break;
       case 4:
         this.name = '달라딘';
-        this.maxHp = 500;
+        this.maxHp = 400;
         this.minAttackDmg = 20;
         this.maxAttackDmg = 30;
-        this.def = 50;
+        this.def = 40;
         this.asciiArt = chalk.yellowBright(`
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡺⡂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡄⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -301,7 +301,7 @@ class Monster {
         break;
       case 6:
         this.name = '세이란드';
-        this.maxHp = 600;
+        this.maxHp = 500;
         this.minAttackDmg = 120;
         this.maxAttackDmg = 150;
         this.def = 5;
@@ -326,7 +326,7 @@ class Monster {
         break;
       case 7:
         this.name = '샤프클로';
-        this.maxHp = 800;
+        this.maxHp = 650;
         this.minAttackDmg = 80;
         this.maxAttackDmg = 100;
         this.def = 30;
@@ -349,7 +349,7 @@ class Monster {
         break;
       case 8:
         this.name = '다이아 골렘';
-        this.maxHp = 800;
+        this.maxHp = 400;
         this.minAttackDmg = 60;
         this.maxAttackDmg = 60;
         this.def = 130;
@@ -374,7 +374,7 @@ class Monster {
         break;
       case 9:
         this.name = '혼도스';
-        this.maxHp = 1200;
+        this.maxHp = 600;
         this.minAttackDmg = 50;
         this.maxAttackDmg = 80;
         this.def = 100;
@@ -397,10 +397,10 @@ class Monster {
         break;
       case 10: // 최종 보스
         this.name = 'Boss:클라디아';
-        this.maxHp = 3000;
+        this.maxHp = 1500;
         this.minAttackDmg = 100;
         this.maxAttackDmg = 200;
-        this.def = 80;
+        this.def = 50;
         this.asciiArt = chalk.greenBright(`
         ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         ⠀⠲⣀⠀⠀⠀⠀⠀⠀⢠⣣⣀⡰⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀
